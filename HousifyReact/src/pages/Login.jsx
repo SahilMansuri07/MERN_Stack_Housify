@@ -34,12 +34,15 @@ const Login = () => {
         credentials: "include", // ✅ Important to receive cookies from backend
         body: JSON.stringify(formData),
       });
-
       const data = await response.json();
 
       if (response.ok) {
         console.log("✅ Login successful:", data);
         navigate("/"); // ✅ Redirect to home
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role);
+        localStorage.setItem("username", data.user.username);
+        
       } else {
         console.error("❌ Login failed:", data.message || data.error);
         setError(data.message || "Login failed");

@@ -1,22 +1,33 @@
 // controllers/auth.controller.js
-import User from '../models/User.js'; // must use default export from ES module
-import bcrypt from 'bcryptjs'; // 🧪 for password hashing
-import jwt from 'jsonwebtoken'; // 🔐 for token generation
+import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+// ==================== Signup ====================
 export const AuthSignup = async (req, res) => {
   try {
-    console.log("Signup request:", req.body); // 🧪 log incoming data
+    console.log("Signup request:", req.body);
 
-    const { username, password, email } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10); 
-     
-    const newUser = new User({ username, password:hashedPassword, email });
-    const savedUser = await newUser.save(); // 🔥 This line actually writes to MongoDB
+    const { username, password, email, role } = req.body;
 
-   
+    // Optional: validate role
+    if (!['buyer', 'seller', 'guest'].includes(role)) {
+      return res.status(400).json({ message: "Invalid role. Must be buyer, seller, or guest" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({ username, email, password: hashedPassword, role });
+    const savedUser = await newUser.save();
+
     res.status(201).json({
       message: "User created successfully",
-      user: savedUser
+      user: {
+        id: savedUser._id,
+        username: savedUser.username,
+        email: savedUser.email,
+        role: savedUser.role
+      }
     });
   } catch (error) {
     console.error("❌ Error saving user:", error.message);
@@ -24,6 +35,7 @@ export const AuthSignup = async (req, res) => {
   }
 };
 
+// ==================== Login ====================
 export const AuthLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -37,17 +49,40 @@ export const AuthLogin = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const validPassword = await bcrypt.compare(password, validUser.password); // Fixed typo here
+    const validPassword = await bcrypt.compare(password, validUser.password);
     if (!validPassword) {
       return res.status(401).json({ message: "Invalid password" });
     }
-    
-    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
 
-    res.cookie("accesstoken", token, { httpOnly: true }); // also fixed typo in cookie name
-    res.status(200).json({ message: "Login successful", token }); // recommended to return a response
+    // Get role from user
+    const { role } = validUser;
+    if (!role) {
+      return res.status(400).json({ message: "User role is not defined" });
+    }
+
+    // Create JWT
+    const token = jwt.sign({ id: validUser._id, role }, process.env.JWT_SECRET, {
+      expiresIn: "1d"
+    });
+
+    res.cookie("accesstoken", token, { httpOnly: true });
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: validUser._id,
+        username: validUser.username,
+        email: validUser.email,
+        role: validUser.role  // ✅ FIXED typo here
+      }
+    });
+
   } catch (error) {
     console.error("Error during login:", error.message);
-    return res.status(500).json({ message: "Login failed", error: error.message });
+    res.status(500).json({
+      message: "Login failed",
+      error: error.message
+    });
   }
 };

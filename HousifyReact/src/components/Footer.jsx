@@ -82,7 +82,7 @@ const Footer = () => {
             <input
               type="email"
               placeholder="Your email address"
-              className="px-3 py-2 rounded-l-md w-full text-sm text-black"
+              className="px-3 py-2 rounded-l-md w-full text-sm text-white"
             />
             <button
               type="submit"

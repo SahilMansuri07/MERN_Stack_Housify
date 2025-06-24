@@ -19,6 +19,7 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "buyer",
   });
 
   const handleChange = (e) => {
@@ -28,35 +29,30 @@ const Signup = () => {
     });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await fetch("http://localhost:3000/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json", // ✅ Important
-      },
-      body: JSON.stringify(formData), // ✅ Convert to JSON string
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:3000/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const data = await response.json();
-    if(!response.ok) {
-      throw new Error(data.message || "Signup failed");
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+      navigate("/user/login");
+    } catch (err) {
+      console.error("❌ Signup error:", err);
     }
-    navigate("/user/login"); // Redirect to login page on success
-
-  } catch (err) {
-    console.error("❌ Signup error:", err);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#f9fafe]">
-     
-      
-
-      {/* Right Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-[#f9fafe] px-6 py-8">
         <div className="bg-white shadow-md rounded-xl w-full max-w-md p-8">
           <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">
@@ -144,12 +140,34 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Terms */}
-            <div className="flex items-start space-x-2">
-              <input type="checkbox" required className="mt-1" />
-              <label className="text-sm text-gray-600">
-                I agree to the Terms and Conditions
-              </label>
+            {/* Role Buttons */}
+            <div>
+              <label className="block mb-2 text-sm font-medium">What would you like to do?</label>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  className={`w-1/2 py-2 rounded-md border font-medium transition ${
+                    formData.role === "buyer"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setFormData({ ...formData, role: "buyer" })}
+                >
+                  I want to Buy
+                </button>
+
+                <button
+                  type="button"
+                  className={`w-1/2 py-2 rounded-md border font-medium transition ${
+                    formData.role === "seller"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setFormData({ ...formData, role: "seller" })}
+                >
+                  I want to Sell
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}

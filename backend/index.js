@@ -1,11 +1,14 @@
 import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
 import mongoose from 'mongoose';
 import cors from 'cors'; // ✅ Important
 import UserRoutes from './routes/user.routes.js';
 import AuthRoutes from './routes/auth.routes.js';
+import SellerRoutes from './routes/seller.routes.js';
+import BuyersRoutes from './routes/buyers.routs.js';
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,18 +24,25 @@ app.use(express.json());
 
 // ✅ MongoDB connection
 const Connection = process.env.CONNECTION_STRING;
-mongoose.connect(Connection, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
+
+mongoose.connect(Connection).then(() => {
   console.log("✅ Database connected successfully");
 }).catch((err) => {
   console.error("❌ Database connection failed:", err.message);
 });
 
+
 // ✅ Routes
 app.use('/test', UserRoutes);
 app.use('/auth', AuthRoutes);
+app.use('/auth', SellerRoutes);
+app.use('/auth', BuyersRoutes);
+
+
+
+
+
+
 
 // ✅ Home route
 app.get('/', (req, res) => {

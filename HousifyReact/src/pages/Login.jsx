@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   FaEnvelope,
   FaEye,
@@ -8,10 +8,12 @@ import {
   FaLock,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext); // ✅ Use AuthContext
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,24 +27,35 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
       const response = await fetch("http://localhost:3000/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // ✅ Important to receive cookies from backend
+        credentials: "include",
         body: JSON.stringify(formData),
       });
+
       const data = await response.json();
 
       if (response.ok) {
         console.log("✅ Login successful:", data);
-        navigate("/"); // ✅ Redirect to home
+
+        // ✅ Save to localStorage
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("username", data.user.username);
-        
+
+        // ✅ Update context
+        setAuth({
+          token: data.token,
+          role: data.user.role,
+          username: data.user.username,
+        });
+
+        navigate("/");
       } else {
         console.error("❌ Login failed:", data.message || data.error);
         setError(data.message || "Login failed");
@@ -55,11 +68,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f9fafe]">
-      {/* Left Banner */}
-     
-
-      {/* Right Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center  px-6 py-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-8">
         <div className="bg-white shadow-md rounded-xl w-full max-w-md p-8">
           <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">
             Housify
@@ -136,12 +145,10 @@ const Login = () => {
               Login
             </button>
 
-            {/* Divider */}
             <div className="text-center text-sm text-gray-500 mt-20 my-3">
               or Continue with
             </div>
 
-            {/* Social Buttons */}
             <div className="flex flex-col gap-2">
               <button className="flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md hover:bg-gray-100 transition">
                 <FaGoogle className="text-red-500" /> Login with Google

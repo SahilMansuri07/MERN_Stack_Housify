@@ -1,7 +1,9 @@
-import React from "react";
+import { useState } from "react";
 
 function HouseDetailsForm({ details, setDetails, onNext }) {
+  const [formdata , setFormData] = useState({});
   return (
+  
     
     <form
       onSubmit={e => {

@@ -7,6 +7,7 @@ import UserRoutes from './routes/user.routes.js';
 import AuthRoutes from './routes/auth.routes.js';
 import SellerRoutes from './routes/seller.routes.js';
 import BuyersRoutes from './routes/buyers.routs.js';
+import ListingRoutes from './routes/listing.routes.js';
 
 
 
@@ -37,6 +38,7 @@ app.use('/test', UserRoutes);
 app.use('/auth', AuthRoutes);
 app.use('/auth', SellerRoutes);
 app.use('/auth', BuyersRoutes);
+app.use('/api/listing', ListingRoutes);
 
 
 

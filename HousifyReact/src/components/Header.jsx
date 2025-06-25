@@ -7,17 +7,23 @@ import {
   FaEnvelope,
   FaUser,
   FaPlus,
+  FaSignOutAlt,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // adjust path if needed
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-  const username = localStorage.getItem("username");
-  console.log("Token:", token);
-  console.log("Role:", role);
-  console.log("User:", username);
+  const { auth, logout } = useAuth();
+  const navigate = useNavigate();
+  console.log("Header rendered with role:", auth.role, "and username:", auth.username);
+  console.log("Header rendered with token:", auth.token);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <header className="bg-[#f9fafe] shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -33,7 +39,7 @@ const Header = () => {
           >
             <FaHome /> Home
           </Link>
-          {role === "buyer" && (
+          {auth.role === "buyer" && (
             <Link
               to="/properties"
               className="flex items-center gap-2 text-gray-800 hover:text-blue-600"
@@ -41,7 +47,7 @@ const Header = () => {
               <FaBuilding /> Browse Properties
             </Link>
           )}
-          {role === "seller" && (
+          {auth.role === "seller" && (
             <Link
               to="/my-listing"
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
@@ -57,11 +63,21 @@ const Header = () => {
             <FaEnvelope /> Contact Us
           </Link>
 
-          <div className="flex items-center gap-3 ml-6">
-            {token ? (
-              <span className="text-blue-600 font-semibold">
-                Hi, { username ? username : "User" }
-              </span>
+          <div className="flex items-center gap-3 ml-6 border p-2 bg-white  rounded-md">
+            {auth.token ? (
+              <>
+                <div><FaUser/></div>
+                <span className="text-blue-600 font-semibold">
+                  Hi, {auth.username || "User"}
+                </span>
+               
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 border border-red-600 text-red-600 px-4 py-1.5 rounded-md hover:bg-red-50"
+                >
+                  <FaSignOutAlt /> Logout
+                </button>
+              </>
             ) : (
               <>
                 <Link
@@ -81,7 +97,7 @@ const Header = () => {
           </div>
         </nav>
 
-        {/* Hamburger Menu for Mobile */}
+        {/* Hamburger Menu */}
         <div
           className="sm:hidden cursor-pointer"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -99,22 +115,26 @@ const Header = () => {
                 <FaHome /> Home
               </Link>
             </li>
-            <li>
-              <Link
-                to="/browse-properties"
-                className="flex items-center gap-2 text-gray-800"
-              >
-                <FaBuilding /> Browse Properties
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/sell-your-house"
-                className="flex items-center gap-2 text-blue-600"
-              >
-                <FaTag /> Sell Your House
-              </Link>
-            </li>
+            {auth.role === "buyer" && (
+              <li>
+                <Link
+                  to="/properties"
+                  className="flex items-center gap-2 text-gray-800"
+                >
+                  <FaBuilding /> Browse Properties
+                </Link>
+              </li>
+            )}
+            {auth.role === "seller" && (
+              <li>
+                <Link
+                  to="/my-listing"
+                  className="flex items-center gap-2 text-blue-600"
+                >
+                  <FaTag /> Sell Your House
+                </Link>
+              </li>
+            )}
             <li>
               <Link
                 to="/contact"
@@ -123,22 +143,38 @@ const Header = () => {
                 <FaEnvelope /> Contact Us
               </Link>
             </li>
-            <li>
-              <Link
-                to="/user/login"
-                className="flex items-center gap-2 border border-blue-600 text-blue-600 px-4 py-1.5 rounded-md"
-              >
-                <FaUser /> Login
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/user/signup"
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-md"
-              >
-                <FaPlus /> Signup
-              </Link>
-            </li>
+            {auth.token ? (
+              <>
+                <li className="text-blue-600">Hi, {auth.username}</li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 border border-red-600 text-red-600 px-4 py-1.5 rounded-md w-full"
+                  >
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link
+                    to="/user/login"
+                    className="flex items-center gap-2 border border-blue-600 text-blue-600 px-4 py-1.5 rounded-md"
+                  >
+                    <FaUser /> Login
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/user/signup"
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-md"
+                  >
+                    <FaPlus /> Signup
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       )}

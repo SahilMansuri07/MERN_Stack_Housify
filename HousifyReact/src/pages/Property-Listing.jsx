@@ -105,7 +105,7 @@ const PropertyCard = ({ property }) => (
         className="w-full h-36 object-cover"
         draggable={false}
       />
-      <span
+      <span 
         className={`absolute top-3 left-3 px-3 py-1 rounded-md text-xs font-semibold text-white ${
           badgeColors[property.type] || "bg-blue-600"
         }`}

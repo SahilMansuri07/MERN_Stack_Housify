@@ -1,16 +1,19 @@
 import { useState } from "react";
 
-function HouseDetailsForm({ details, setDetails, onNext }) {
-  const [formdata , setFormData] = useState({});
+function HouseDetailsForm({ form, setForm, onNext }) {
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onNext();
+    console.log("House Details Submitted:", form);
+  };
+
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  setForm(prev => ({ ...prev, [name]: value }));
+};
   return (
-  
-    
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        onNext();
-      }}
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-[#1e293b] mb-6">House Details</h2>
       {/* Listing Title */}
       <div className="mb-5">
@@ -23,8 +26,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
           name="title"
           placeholder="e.g., Luxury 3BHK Apartment in Mumbai"
           required
-          value={details.title}
-          onChange={e => setDetails(prev => ({ ...prev, title: e.target.value }))}
+          value={form.title}
+          onChange={handleChange }
           className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
         />
         <p className="text-xs text-gray-500 mt-1">
@@ -42,10 +45,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
           placeholder="Provide a detailed description of your property..."
           required
           rows={4}
-          value={details.description}
-          onChange={e =>
-            setDetails(prev => ({ ...prev, description: e.target.value }))
-          }
+          value={form.description}
+          onChange={handleChange}
           className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm resize-none"
         ></textarea>
         <p className="text-xs text-gray-500 mt-1">
@@ -64,34 +65,12 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
             name="price"
             placeholder="e.g., 5000000"
             required
-            value={details.price}
-            onChange={e =>
-              setDetails(prev => ({ ...prev, price: e.target.value }))
-            }
+            value={form.price}
+            onChange={handleChange}
             className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
           />
         </div>
-        <div className="flex-1">
-          <label htmlFor="currency" className="block font-medium text-[#1e293b] mb-1">
-            Currency
-          </label>
-          <select
-            id="currency"
-            name="currency"
-            required
-            value={details.currency}
-            onChange={e =>
-              setDetails(prev => ({ ...prev, currency: e.target.value }))
-            }
-            className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
-          >
-            <option value="INR">Indian Rupee (₹)</option>
-            <option value="USD">US Dollar ($)</option>
-            <option value="EUR">Euro (€)</option>
-            <option value="GBP">Pound Sterling (£)</option>
-            <option value="AUD">Australian Dollar (A$)</option>
-          </select>
-        </div>
+    
       </div>
       {/* Address */}
       <div className="mb-5">
@@ -104,8 +83,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
           name="address"
           placeholder="Street address"
           required
-          value={details.address}
-          onChange={e => setDetails(prev => ({ ...prev, address: e.target.value }))}
+          value={form.address}
+            onChange={handleChange}
           className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
         />
       </div>
@@ -121,10 +100,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
             name="city"
             placeholder="e.g., Mumbai"
             required
-            value={details.city}
-            onChange={e =>
-              setDetails(prev => ({ ...prev, city: e.target.value }))
-            }
+            value={form.city}
+            onChange={handleChange}
             className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
           />
         </div>
@@ -138,10 +115,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
             name="state"
             placeholder="e.g., Maharashtra"
             required
-            value={details.state}
-            onChange={e =>
-              setDetails(prev => ({ ...prev, state: e.target.value }))
-            }
+            value={form.state}
+            onChange={handleChange}
             className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
           />
         </div>
@@ -155,10 +130,8 @@ function HouseDetailsForm({ details, setDetails, onNext }) {
             name="zip"
             placeholder="e.g., 400001"
             required
-            value={details.zip}
-            onChange={e =>
-              setDetails(prev => ({ ...prev, zip: e.target.value }))
-            }
+            value={form.zip}
+            onChange={handleChange}
             className="w-full p-2 border border-[#e8eaf6] rounded focus:ring-2 focus:ring-blue-200 text-sm"
           />
         </div>

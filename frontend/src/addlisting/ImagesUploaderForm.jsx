@@ -1,20 +1,26 @@
 import React, { useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
-function ImagesUploaderForm({ images, setImages, onBack, onNext }) {
+function ImagesUploaderForm({ form, setForm, onBack, onNext }) {
   const [dragActive, setDragActive] = useState(false);
 
   const handleImageUpload = files => {
-    const filesArr = Array.from(files).slice(0, 10 - images.length);
+    const filesArr = Array.from(files).slice(0, 10 - form.images.length);
     const newImages = filesArr.map(file => ({
       file,
       url: URL.createObjectURL(file),
     }));
-    setImages(prev => [...prev, ...newImages].slice(0, 10));
+    setForm(prev => ({
+      ...prev,
+      images: [...prev.images, ...newImages].slice(0, 10)
+    }));
   };
 
   const handleRemoveImage = idx => {
-    setImages(prev => prev.filter((_, i) => i !== idx));
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== idx)
+    }));
   };
 
   const onImageDrop = e => {
@@ -36,6 +42,8 @@ function ImagesUploaderForm({ images, setImages, onBack, onNext }) {
       <p className="text-gray-500 mb-6">
         Upload high-quality images of your property. You can upload up to 10 images.
       </p>
+
+      {/* Drop Zone */}
       <div
         className={`border-2 border-dashed rounded-lg flex flex-col items-center justify-center h-44 mb-7 transition ${dragActive ? "border-blue-400 bg-blue-50" : "border-[#e8eaf6]"}`}
         onDragOver={e => {
@@ -65,7 +73,8 @@ function ImagesUploaderForm({ images, setImages, onBack, onNext }) {
           Recommended: JPG, PNG. Max size: 5MB per image
         </span>
       </div>
-      {/* Uploaded Images */}
+
+      {/* Uploaded Images Preview */}
       <div className="bg-[#f6f7fa] rounded-md p-4 mb-7">
         <p className="text-[#1e293b] font-medium mb-2">
           Uploaded Images
@@ -74,12 +83,19 @@ function ImagesUploaderForm({ images, setImages, onBack, onNext }) {
           </span>
         </p>
         <div className="flex flex-wrap gap-4">
-          {images.length === 0 && (
+          {form.images.length === 0 && (
             <span className="text-gray-500 text-sm">No images uploaded yet.</span>
           )}
-          {images.map((img, idx) => (
-            <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border border-[#e8eaf6] bg-white flex-shrink-0">
-              <img src={img.url} alt={`upload-${idx}`} className="w-full h-full object-cover" />
+          {form.images.map((img, idx) => (
+            <div
+              key={idx}
+              className="relative w-20 h-20 rounded overflow-hidden border border-[#e8eaf6] bg-white flex-shrink-0"
+            >
+              <img
+                src={img.url || img}
+                alt={`upload-${idx}`}
+                className="w-full h-full object-cover"
+              />
               {idx === 0 && (
                 <span className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-xs px-1 py-0.5 rounded-bl rounded-br text-center">
                   Featured
@@ -97,6 +113,8 @@ function ImagesUploaderForm({ images, setImages, onBack, onNext }) {
           ))}
         </div>
       </div>
+
+      {/* Buttons */}
       <div className="flex justify-between">
         <button
           type="button"

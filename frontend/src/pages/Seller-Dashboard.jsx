@@ -1,7 +1,8 @@
 import { FaPlus, FaHome } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-export default function SellerDashboard() {
+export default function SellerDashboard(form) {
+  console.log(form)
   return (
     <div className="bg-[#f5f9ff] min-h-screen py-10 px-4 sm:px-8">
       <div className="max-w-5xl mx-auto">

@@ -18,45 +18,59 @@ function AddListing() {
   const [currentStep, setCurrentStep] = useState(1);
 
   // House Details State
-  const [details, setDetails] = useState({
-    title: "",
-    description: "",
-    price: "",
-    currency: "INR",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
+  const [form, setForm] = useState({
+  "title": "Luxury 3BHK Apartment in Mumbai",
+  "description": "A spacious 3BHK apartment located in a prime area with modern amenities, nearby schools, and metro connectivity.",
+  "price": 5000000,
+  "address": "123 Marine Drive",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "pinCode": "400001",
+
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "squareFootage": 1500,
+  "propertyType": "Apartment",
+  "yearBuilt": 2015,
+  "features": [
+    "Garden",
+    "Swimming Pool",
+    "Garage",
+    "Balcony",
+    "Air Conditioning",
+    "Gym",
+    "Security",
+    "Parking"
+  ],
+
+  "images": [
+    "https://example.com/uploads/image1.jpg",
+    "https://example.com/uploads/image2.jpg"
+  ],
+
+  "contactName": "Rahul Mehta",
+  "contactEmail": "rahul.mehta@example.com",
+  "contactPhone": "+91-9876543210"
+ 
+
   });
 
-  // Specifications State
-  const [specs, setSpecs] = useState({
-    bedrooms: "",
-    bathrooms: "",
-    sqft: "",
-    propertyType: "",
-    yearBuilt: "",
-    features: [],
-  });
-
-  // Images State
-  const [images, setImages] = useState([]);
 
   // Render current step form
   let stepForm;
   if (currentStep === 1)
     stepForm = (
       <HouseDetailsForm
-        details={details}
-        setDetails={setDetails}
+        form={form}
+        setForm={setForm}
         onNext={() => setCurrentStep(2)}
       />
     );
   else if (currentStep === 2)
     stepForm = (
       <HouseSpecificationsForm
-        specs={specs}
-        setSpecs={setSpecs}
+        form={form}
+        setForm={setForm}
         onBack={() => setCurrentStep(1)}
         onNext={() => setCurrentStep(3)}
       />
@@ -64,8 +78,8 @@ function AddListing() {
   else if (currentStep === 3)
     stepForm = (
       <ImagesUploaderForm
-        images={images}
-        setImages={setImages}
+       form={form}
+        setForm={setForm}
         onBack={() => setCurrentStep(2)}
         onNext={() => setCurrentStep(4)}
       />
@@ -73,6 +87,8 @@ function AddListing() {
   else if (currentStep === 4)
     stepForm = (
       <ContactInfoForm
+        form={form}
+        setForm={setForm}
         onBack={() => setCurrentStep(3)}
         onNext={() => setCurrentStep(5)}
       />
@@ -80,10 +96,8 @@ function AddListing() {
   else if (currentStep === 5)
     stepForm = (
       <PreviewSubmitForm
-        details={details}
-        specs={specs}
-        images={images}
-        onBack={() => setCurrentStep(4)}
+        form={form}
+         onBack={() => setCurrentStep(4)}
       />
     );
 
@@ -98,7 +112,7 @@ function AddListing() {
       <AddListingStepper steps={steps} currentStep={currentStep} />
 
       <div className="flex justify-center flex-1">
-        <div className="bg-white rounded-xl shadow border border-[#e8eaf6] w-full max-w-2xl p-8 mb-12">
+        <div className="bg-white rounded-xl shadow border border-[#e8eaf6] w-full max-w-7xl p-8 mb-12">
           {stepForm}
         </div>
       </div>

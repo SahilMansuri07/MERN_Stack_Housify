@@ -8,7 +8,8 @@ import PropertyListing from './pages/Property-Listing';
 import AddListing from './addlisting/AddListing';
 import SellerDashboard from './pages/Seller-Dashboard';
 import Unauthorized from './ProtectedRoutes/Unauthorized';
-import PrivateRoute from './ProtectedRoutes/index'; // 👈 import this
+import PrivateRoute from './ProtectedRoutes/index'; 
+import Contactus from './pages/Contactus';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/user/login" element={<Login />} />
         <Route path="/properties" element={<PropertyListing />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/contact" element={<Contactus />} />
 
         {/* Seller Protected Routes */}
         <Route element={<PrivateRoute allowedRoles={['seller']} />}>

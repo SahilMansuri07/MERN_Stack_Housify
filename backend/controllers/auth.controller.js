@@ -30,7 +30,7 @@ export const AuthSignup = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("❌ Error saving user:", error.message);
+    console.error(" Error saving user:", error.message);
     res.status(500).json({ message: "Failed to save user", error: error.message });
   }
 };

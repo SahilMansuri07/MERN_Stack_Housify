@@ -1,47 +1,5 @@
-import React, { useState } from "react";
-
-// Dummy Data
-const featuredProperties = [
-  {
-    tag: "Featured",
-    badgeColor: "bg-blue-500",
-    title: "Luxury Villa",
-    location: "Los Angeles, CA",
-    img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
-    beds: 4,
-    baths: 3,
-    sqft: 3200,
-    price: "₹35,07,000",
-    slides: 6,
-    activeSlide: 6,
-  },
-  {
-    tag: "New",
-    badgeColor: "bg-blue-400",
-    title: "Modern Apartment",
-    location: "Manhattan, NY",
-    img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=800&q=80",
-    beds: 2,
-    baths: 1,
-    sqft: 1100,
-    price: "₹28,40,000",
-    slides: 6,
-    activeSlide: 6,
-  },
-  {
-    tag: "Featured",
-    badgeColor: "bg-blue-500",
-    title: "Family House",
-    location: "Brooklyn, NY",
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
-    beds: 3,
-    baths: 2,
-    sqft: 1600,
-    price: "₹54,27,500",
-    slides: 6,
-    activeSlide: 5,
-  }
-];
+import React, { useState , useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -97,6 +55,7 @@ const features = [
 ];
 
 function PropertyCard({ tag, badgeColor, title, location, img, beds, baths, sqft, price, slides, activeSlide }) {
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-xl shadow-md mb-8 mx-auto w-full max-w-xs transition hover:shadow-xl">
       <div className="relative">
@@ -139,7 +98,9 @@ function PropertyCard({ tag, badgeColor, title, location, img, beds, baths, sqft
         </div>
         <div className="flex items-center justify-between mt-2">
           <span className="text-blue-600 font-bold text-lg">{price}</span>
-          <button className="border border-blue-600 text-blue-600 rounded px-3 py-1 text-sm font-semibold hover:bg-blue-50 transition">
+          <button 
+          onClick={() => navigate(`/property/${property._id || property.id}`)}
+          className="border border-blue-600 text-blue-600 rounded px-3 py-1 text-sm font-semibold hover:bg-blue-50 transition">
             View Details
           </button>
         </div>
@@ -153,6 +114,24 @@ export default function HomePage() {
   const [propertyType, setPropertyType] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [bedrooms, setBedrooms] = useState("");
+  const [featuredProperties, setFeaturedProperties] = useState([]);
+  const navigate = useNavigate();
+
+  
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/listing');
+        const data = await res.json();
+        console.log('Featured Properties:', data);
+        setFeaturedProperties(data);
+      } catch (err) {
+        console.error('Failed to fetch featured properties:', err);
+      }
+    };
+   
+    fetchFeatured();
+  }, []);
 
   // Gradient overlay image for hero
   const heroBg = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80";
@@ -231,9 +210,31 @@ export default function HomePage() {
           <span className="block w-24 h-1 bg-blue-600 mx-auto mt-2 rounded"></span>
         </h2>
         <div className="flex flex-wrap justify-center gap-8">
-          {featuredProperties.map((prop, i) => (
-            <PropertyCard key={i} {...prop} />
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+  {featuredProperties.map((property) => (
+   
+    <div
+      onClick={() => navigate(`/property/${property._id || property.id}`)}
+      key={property._id}
+      className="bg-white rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105"
+    >
+        {console.log("Image array:", property.images)}
+{console.log("First image URL:", property.images?.[0])}
+      <img
+
+        src={property.images?.[0] || '/default.jpg'}
+        alt={property.title}
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-4">
+        <h3 className="text-lg font-semibold">{property.title}</h3>
+        <p className="text-gray-600">{property.location}</p>
+        <p className="text-blue-600 font-bold mt-2">₹{property.price?.toLocaleString()}</p>
+      </div>
+    </div>
+  ))}
+</div>
+
         </div>
       </section>
       {/* Why Choose Housify Section */}

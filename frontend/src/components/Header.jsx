@@ -48,12 +48,20 @@ const Header = () => {
             </Link>
           )}
           {auth.role === "seller" && (
+            <div className="flex items-center gap-5">
             <Link
               to="/my-listing"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+              className="flex items-center gap-2  text-gray-800 hover:text-blue-700"
             >
               <FaTag /> Sell Your House
+            </Link>     
+            <Link
+              to="/properties"
+              className="flex items-center gap-2 text-gray-800 hover:text-blue-600"
+            >
+              <FaBuilding /> Browse Properties
             </Link>
+            </div>
           )}
 
           <Link

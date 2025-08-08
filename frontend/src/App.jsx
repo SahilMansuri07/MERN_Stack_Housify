@@ -10,6 +10,7 @@ import SellerDashboard from './pages/Seller-Dashboard';
 import Unauthorized from './ProtectedRoutes/Unauthorized';
 import PrivateRoute from './ProtectedRoutes/index'; 
 import Contactus from './pages/Contactus';
+import PropDetails from './pages/PropDetails';
 
 function App() {
   return (
@@ -23,11 +24,13 @@ function App() {
         <Route path="/properties" element={<PropertyListing />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/contact" element={<Contactus />} />
+        <Route path="/property/:id" element={<PropDetails />} />
 
         {/* Seller Protected Routes */}
         <Route element={<PrivateRoute allowedRoles={['seller']} />}>
           <Route path="/my-listing" element={<SellerDashboard />} />
           <Route path="/add-props" element={<AddListing />} />
+          <Route path="/properties" element={<PropertyListing />} />
         </Route>
       </Routes>
       <Footer />

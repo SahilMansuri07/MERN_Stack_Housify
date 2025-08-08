@@ -4,34 +4,101 @@ import Listing from "../models/PropertiesModel/createprops.js";
 // ✅ Create a new listing
 const createListing = async (req, res) => {
   try {
+    console.log("=== CREATE LISTING DEBUG INFO ===");
+    console.log("User:", req.user);
+    console.log("Body:", req.body);
+    console.log("Files:", req.files);
+    console.log("Files count:", req.files?.length || 0);
+    
     const userId = req.user?.id;
     if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
+      return res.status(401).json({ 
+        message: 'Unauthorized: User ID missing',
+        error: 'MISSING_USER_ID'
+      });
     }
 
-    // Check if files exist
-    const imageUrls = req.files?.map(file => file.path) || [];
-    if (imageUrls.length === 0) {
-      return res.status(400).json({ message: "No images uploaded" });
+    // Validate required fields
+    const { title, description, price, location, propertyType } = req.body;
+    if (!title || !description || !price || !location || !propertyType) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: title, description, price, location, propertyType',
+        error: 'MISSING_REQUIRED_FIELDS'
+      });
     }
 
-    const listing = await Listing.create({
-      ...req.body,
+    // Check if files exist and are valid
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ 
+        message: "At least one image is required",
+        error: 'NO_IMAGES_UPLOADED'
+      });
+    }
+
+    // Extract image URLs from uploaded files
+    const imageUrls = req.files.map(file => {
+      console.log("Processing file:", file.filename, "URL:", file.path);
+      return file.path; // Cloudinary URL
+    });
+
+    console.log("Image URLs:", imageUrls);
+
+    // Validate price
+    const numericPrice = parseFloat(price);
+    if (isNaN(numericPrice) || numericPrice <= 0) {
+      return res.status(400).json({
+        message: 'Price must be a valid positive number',
+        error: 'INVALID_PRICE'
+      });
+    }
+
+    const listingData = {
+      title: title.trim(),
+      description: description.trim(),
+      price: numericPrice,
+      location: location.trim(),
+      propertyType,
       userReference: userId,
       images: imageUrls,
-    });
-    console.log("REQ FILES", req.files);
-console.log("REQ BODY", req.body);
+    };
+
+    console.log("Creating listing with data:", listingData);
+
+    const listing = await Listing.create(listingData);
+    
+    console.log("Listing created successfully:", listing._id);
 
     res.status(201).json({
       message: 'Listing created successfully',
       data: listing,
     });
   } catch (error) {
-    console.error('Error creating listing:', error);
+    console.error('=== CREATE LISTING ERROR ===');
+    console.error('Error details:', error);
+    console.error('Stack trace:', error.stack);
+    
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        message: 'Validation failed',
+        error: 'VALIDATION_ERROR',
+        details: validationErrors
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: 'Duplicate entry detected',
+        error: 'DUPLICATE_ERROR'
+      });
+    }
+    
     res.status(500).json({
       message: 'Error creating listing',
-      error: error.message,
+      error: 'SERVER_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };

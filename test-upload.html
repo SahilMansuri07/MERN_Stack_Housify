@@ -128,8 +128,8 @@
             showResult('Uploading...', 'success');
             
             try {
-                // Using test endpoint without authentication
-                const response = await fetch('http://localhost:3000/api/listing/test-upload', {
+                // Using debug server
+                const response = await fetch('http://localhost:3002/test-upload', {
                     method: 'POST',
                     body: formData
                 });

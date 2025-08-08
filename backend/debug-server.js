@@ -1,9 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import upload from './Middleware/upload.js';
 
 dotenv.config();
+
+// Get current directory (needed for ES modules)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3002;
@@ -15,6 +21,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Serve static files for uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Simple test route
 app.get('/', (req, res) => {
@@ -37,16 +46,19 @@ app.post('/test-upload', upload.array('images', 6), (req, res) => {
     }
 
     const imageUrls = req.files.map(file => {
-      console.log("File processed:", file.filename, "URL:", file.path);
-      return file.path;
+      console.log("File processed:", file.filename, "Local path:", file.path);
+      // Create URL for accessing the image
+      const imageUrl = `/uploads/images/${file.filename}`;
+      return imageUrl;
     });
     
     res.status(200).json({
-      message: 'Images uploaded successfully to Cloudinary!',
+      message: 'Images uploaded successfully to local disk!',
       data: {
         uploadedImages: imageUrls,
         imageCount: req.files.length,
-        formData: req.body
+        formData: req.body,
+        serverUrl: `http://localhost:${PORT}`
       }
     });
   } catch (error) {
@@ -69,8 +81,6 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Debug server running on http://localhost:${PORT}`);
-  console.log('Environment variables check:');
-  console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET');
-  console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET');
-  console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET');
+  console.log(`📁 Images served at http://localhost:${PORT}/uploads/images/`);
+  console.log('Local storage setup completed!');
 });

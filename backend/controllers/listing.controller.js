@@ -35,10 +35,12 @@ const createListing = async (req, res) => {
       });
     }
 
-    // Extract image URLs from uploaded files
+    // Extract local file paths and create URLs
     const imageUrls = req.files.map(file => {
-      console.log("Processing file:", file.filename, "URL:", file.path);
-      return file.path; // Cloudinary URL
+      console.log("Processing file:", file.filename, "Path:", file.path);
+      // Create URL for accessing the image
+      const imageUrl = `/uploads/images/${file.filename}`;
+      return imageUrl;
     });
 
     console.log("Image URLs:", imageUrls);

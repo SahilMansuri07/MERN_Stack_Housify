@@ -1,30 +1,37 @@
 // backend/middleware/upload.js
 import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import cloudinary from '../config/cloudinaryConfig.js';
+import path from 'path';
+import fs from 'fs';
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'listing_images',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }],
-    public_id: (req, file) => {
-      // Generate unique filename with timestamp
-      const timestamp = Date.now();
-      const originalName = file.originalname.split('.')[0];
-      return `listing_${timestamp}_${originalName}`;
-    },
+// Create uploads directory if it doesn't exist
+const uploadDir = 'uploads/images';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configure local disk storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
   },
+  filename: (req, file, cb) => {
+    // Generate unique filename with timestamp
+    const timestamp = Date.now();
+    const originalName = path.parse(file.originalname).name;
+    const extension = path.extname(file.originalname);
+    const filename = `listing_${timestamp}_${originalName}${extension}`;
+    cb(null, filename);
+  }
 });
 
 // File filter function
 const fileFilter = (req, file, cb) => {
   // Check file type
-  if (file.mimetype.startsWith('image/')) {
+  const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error('Only image files (JPG, JPEG, PNG, WEBP) are allowed!'), false);
   }
 };
 
@@ -60,22 +67,18 @@ export const handleMulterError = (error, req, res, next) => {
     }
   }
   
-  if (error.message === 'Only image files are allowed!') {
+  if (error.message === 'Only image files (JPG, JPEG, PNG, WEBP) are allowed!') {
     return res.status(400).json({
       message: 'Only image files (JPG, JPEG, PNG, WEBP) are allowed.',
       error: 'INVALID_FILE_TYPE'
     });
   }
   
-  // Cloudinary errors
-  if (error.message && error.message.includes('cloudinary')) {
-    return res.status(500).json({
-      message: 'Image upload service error. Please try again.',
-      error: 'CLOUDINARY_ERROR'
-    });
-  }
-  
-  next(error);
+  // General file upload errors
+  return res.status(500).json({
+    message: 'File upload error. Please try again.',
+    error: 'UPLOAD_ERROR'
+  });
 };
 
 export default upload;

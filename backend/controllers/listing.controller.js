@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Listing from "../models/PropertiesModel/createprops.js";
 
-// ✅ Create a new listing
+// ✅ Create a new listing (now goes to pending status)
 const createListing = async (req, res) => {
   try {
     console.log("=== CREATE LISTING DEBUG INFO ===");
@@ -62,6 +62,9 @@ const createListing = async (req, res) => {
       propertyType,
       userReference: userId,
       images: imageUrls,
+      // These fields are set by the model defaults:
+      // status: 'pending' (default)
+      // isPublished: false (default)
     };
 
     console.log("Creating listing with data:", listingData);
@@ -69,10 +72,17 @@ const createListing = async (req, res) => {
     const listing = await Listing.create(listingData);
     
     console.log("Listing created successfully:", listing._id);
+    console.log("Listing status:", listing.status);
 
     res.status(201).json({
-      message: 'Listing created successfully',
-      data: listing,
+      message: 'Listing submitted successfully! It will be reviewed by our admin team before being published.',
+      data: {
+        ...listing.toObject(),
+        statusInfo: {
+          current: 'pending',
+          message: 'Your listing is pending admin approval. You will be notified once it is reviewed.'
+        }
+      },
     });
   } catch (error) {
     console.error('=== CREATE LISTING ERROR ===');
@@ -171,14 +181,111 @@ const deleteListing = async (req, res) => {
   }
 };
 
-// ✅ Get all listings
+// ✅ Get all listings (public - only shows approved/published listings)
 const getAllListings = async (req, res) => {
   try {
-    const listings = await Listing.find().sort({ createdAt: -1 });
-    res.status(200).json(listings);
+    const { page = 1, limit = 10, propertyType, minPrice, maxPrice, city } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build filter for public listings (only approved and published)
+    const filter = { 
+      status: 'approved',
+      isPublished: true 
+    };
+
+    if (propertyType) {
+      filter.propertyType = propertyType;
+    }
+    if (city) {
+      filter.city = new RegExp(city, 'i'); // Case insensitive search
+    }
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+    }
+
+    const listings = await Listing.find(filter)
+      .populate('userReference', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalListings = await Listing.countDocuments(filter);
+
+    res.status(200).json({
+      message: 'Published listings retrieved successfully',
+      data: {
+        listings,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalListings / limit),
+          totalListings,
+          hasNext: page * limit < totalListings,
+          hasPrev: page > 1
+        }
+      }
+    });
   } catch (error) {
     console.error("Error fetching listings:", error.message);
     res.status(500).json({ message: "Failed to fetch listings" });
+  }
+};
+
+// ✅ Get seller's own listings (includes all statuses for their own listings)
+const getSellerListings = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ 
+        message: 'Unauthorized: User ID missing',
+        error: 'MISSING_USER_ID'
+      });
+    }
+
+    const { page = 1, limit = 10, status } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build filter for seller's listings
+    const filter = { userReference: userId };
+    if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+      filter.status = status;
+    }
+
+    const listings = await Listing.find(filter)
+      .populate('adminReview.reviewedBy', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalListings = await Listing.countDocuments(filter);
+
+    // Get status counts for seller dashboard
+    const statusCounts = await Listing.aggregate([
+      { $match: { userReference: new mongoose.Types.ObjectId(userId) } },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+
+    res.status(200).json({
+      message: 'Your listings retrieved successfully',
+      data: {
+        listings,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalListings / limit),
+          totalListings,
+          hasNext: page * limit < totalListings,
+          hasPrev: page > 1
+        },
+        statusSummary: statusCounts.reduce((acc, item) => {
+          acc[item._id] = item.count;
+          return acc;
+        }, { pending: 0, approved: 0, rejected: 0 })
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching seller listings:", error.message);
+    res.status(500).json({ message: "Failed to fetch your listings" });
   }
 };
 
@@ -211,4 +318,5 @@ export {
   deleteListing,
   getAllListings,
   getOneListing,
+  getSellerListings, // New function for seller dashboard
 };

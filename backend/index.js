@@ -10,6 +10,7 @@ import AuthRoutes from './routes/auth.routes.js';
 import SellerRoutes from './routes/seller.routes.js';
 import BuyersRoutes from './routes/buyers.routs.js';
 import ListingRoutes from './routes/listing.routes.js';
+import AdminRoutes from './routes/admin.routes.js';
 
 // Get current directory (needed for ES modules)
 const __filename = fileURLToPath(import.meta.url);
@@ -45,6 +46,7 @@ app.use('/auth', AuthRoutes);
 app.use('/auth', SellerRoutes);
 app.use('/auth', BuyersRoutes);
 app.use('/api/listing', ListingRoutes);
+app.use('/api/admin', AdminRoutes); // ✅ New admin routes
 
 // ✅ Home route
 app.get('/', (req, res) => {
@@ -61,4 +63,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
   console.log(`📁 Images served at http://localhost:${PORT}/uploads/images/`);
+  console.log(`🔧 Admin panel available at http://localhost:${PORT}/api/admin/`);
 });

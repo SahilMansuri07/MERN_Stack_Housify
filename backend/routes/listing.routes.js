@@ -6,6 +6,7 @@ import {
   deleteListing,
   getAllListings,
   getOneListing,
+  getSellerListings,
 } from '../controllers/listing.controller.js';
 
 import authenticateToken from '../Middleware/authenticateToken.js';
@@ -14,7 +15,7 @@ import upload, { handleMulterError } from '../Middleware/upload.js';
 
 const router = express.Router();
 
-// Public
+// Public routes
 router.get('/', getAllListings);
 router.get('/:id', getOneListing);
 
@@ -36,14 +37,18 @@ router.post(
         });
       }
 
-      const imageUrls = req.files.map(file => file.path);
+      const imageUrls = req.files.map(file => {
+        const imageUrl = `/uploads/images/${file.filename}`;
+        return imageUrl;
+      });
       
       res.status(200).json({
-        message: 'Images uploaded successfully to Cloudinary!',
+        message: 'Images uploaded successfully to local disk!',
         data: {
           uploadedImages: imageUrls,
           imageCount: req.files.length,
-          formData: req.body
+          formData: req.body,
+          serverUrl: `http://localhost:3000`
         }
       });
     } catch (error) {
@@ -56,14 +61,22 @@ router.post(
   }
 );
 
-// Protected for sellers
+// Protected seller routes
 router.post(
   '/create',
   authenticateToken,
   authorizeRole('seller'),
-  upload.array('images', 6), // Must match frontend key
-  handleMulterError, // Add error handling middleware
+  upload.array('images', 6),
+  handleMulterError,
   createListing
+);
+
+// Seller dashboard - get their own listings
+router.get(
+  '/seller/my-listings',
+  authenticateToken,
+  authorizeRole('seller'),
+  getSellerListings
 );
 
 router.put('/:id', authenticateToken, authorizeRole('seller'), editListing);
